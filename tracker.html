@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go-live tracker · Without, 1 March 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Caveat:wght@500;600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;
+  --paper:#eef1e9;--sheet:#fff;--ink:#15241b;--muted:#55645a;--line:#d3d9cf;
+  --leaf:#1e6a49;--hero:#e2e9d8;--foil:#c6ccd0;
+  --green:#1d7f55;--amber:#a86a06;--red:#b8382c;--green-bg:#dff1e7;--amber-bg:#f8ebd0;--red-bg:#f9e0dc;
+  --display:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --hand:"Caveat","Segoe Print","Bradley Hand",cursive}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;letter-spacing:-0.01em;text-wrap:balance}
+h1{font-size:clamp(32px,4.5vw,52px);line-height:1.04}
+h2{font-size:clamp(24px,3vw,32px);line-height:1.1}
+p{margin:0;max-width:66ch}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+header{background:var(--hero)}
+header .wrap{padding:28px 20px 40px;display:flex;flex-direction:column;gap:16px}
+.back{font-size:15px;font-weight:600;color:var(--leaf);text-decoration:none;align-self:flex-start}
+.back:hover{text-decoration:underline}
+.lede{font-size:18px;color:#2b3c31}
+.counts{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:15px}
+.counts b{font-family:var(--display);font-size:22px;margin-right:4px}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:9px 16px;border-radius:4px;border:2px solid var(--leaf);background:var(--leaf);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--leaf)}
+.btn[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn:focus-visible,.back:focus-visible{outline:3px solid #e8c46a;outline-offset:2px}
+main.wrap{display:flex;flex-direction:column;gap:64px;padding:52px 20px 40px}
+section{display:flex;flex-direction:column;gap:16px}
+.sub{color:var(--muted);font-size:17px}
+.card{background:var(--sheet);border-radius:6px;padding:16px}
+.scroll{overflow-x:auto}
+/* timeline */
+.gantt{min-width:860px}
+.axis,.gantt li{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:center}
+.axis .ticks,.axis .labels{position:relative;height:22px}
+.axis .ticks span{position:absolute;font-size:13px;color:var(--muted);border-left:1px solid var(--line);padding-left:5px;top:0;height:22px}
+.axis .labels{height:44px}
+.axis .labels span{position:absolute;transform:translateX(-50%);font-family:var(--hand);font-size:19px;line-height:1;color:var(--leaf);text-align:center;white-space:nowrap;top:4px}
+.axis .labels span small{display:block;font-family:var(--body);font-size:12px;color:var(--muted);margin-top:2px}
+.axis .labels span.t{color:var(--amber)}
+.axis .labels span.now{color:var(--ink)}
+.gantt ol{list-style:none;margin:0;padding:0}
+.gantt li{border-top:1px solid var(--line);padding:6px 0}
+.gantt .name{display:grid;grid-template-columns:26px 1fr;gap:6px;font-size:14.5px;line-height:1.3}
+.gantt .name b{font-family:var(--display);color:var(--leaf)}
+.gantt .name small{display:block;color:var(--muted);font-size:12.5px}
+.track{position:relative;height:28px}
+.track i{position:absolute;top:0;bottom:0}
+.track .travel{background:repeating-linear-gradient(135deg,#f3e6c8 0 6px,#f8efdc 6px 12px)}
+.track .mark{width:0;border-left:2px solid var(--leaf);opacity:.55}
+.track .asof{width:0;border-left:2px dashed var(--ink);opacity:.5}
+.track .bar{top:7px;bottom:7px;border-radius:3px;min-width:6px}
+.bar.g{background:var(--green)} .bar.a{background:#d08a10} .bar.r{background:var(--red)} .bar.n{background:#9aa79c}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.legend i{display:inline-block;width:22px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+/* tables */
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--muted);font-size:13px}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.nowrap{white-space:nowrap}
+.none{color:#a3aea5}
+#tasks{min-width:1040px}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;background:#e3e8de;white-space:nowrap;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px)}
+.chip.Green{background:var(--green-bg);color:var(--green)} .chip.Amber{background:var(--amber-bg);color:var(--amber)} .chip.Red{background:var(--red-bg);color:var(--red)}
+body.founder .gantt li:not(.nf),body.founder #tasks tbody tr:not(.nf){display:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+dl{margin:0;display:grid;grid-template-columns:150px 1fr;gap:10px 16px;font-size:15px}
+dt{font-weight:600} dd{margin:0;color:#2b3c31}
+@media (max-width:820px){.two{grid-template-columns:1fr} dl{grid-template-columns:1fr;gap:2px 0} dd{margin-bottom:8px}}
+footer.wrap{padding:28px 20px 56px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="back" href="./">Back to the workflow</a>
+    <h1>Go-live tracker</h1>
+    <p class="lede">The 18 tasks between now and the 15 March delivery, with Monday's messages applied. Status as of Monday 7 December 2026.</p>
+    <div class="counts"><span><b>1</b>Red</span><span><b>3</b>Amber</span><span><b>1</b>Green</span><span><b>13</b>Not started</span><span><b>7</b>need the founder</span></div>
+    <div class="actions">
+      <button class="btn ghost" id="fo" type="button" aria-pressed="false">Show only what needs the founder</button>
+      <a class="btn" href="Without-Go-Live-Tracker.xlsx" download>Download the Excel file</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+<section aria-labelledby="h-time">
+  <h2 id="h-time">Timeline</h2>
+  <p class="sub">Each bar runs from a task's start to its end. The green lines are dates that cannot move; the shaded band is the founder's trip, when nothing can be signed.</p>
+  <div class="card scroll">
+    <div class="gantt">
+      <div class="axis"><div></div><div class="labels"><span style="left:69.72%">Consent expires<small>15 Feb</small></span><span style="left:82.57%">Go-live<small>1 Mar</small></span><span style="left:95.41%">Delivery due<small>15 Mar</small></span><span class="t" style="left:41.74%">Founder away<small>10–20 Jan</small></span><span class="now" style="left:5.50%">Status as of<small>7 Dec</small></span></div></div>
+      <div class="axis"><div></div><div class="ticks"><span style="left:0.00%">Dec 2026</span><span style="left:28.44%">Jan 2027</span><span style="left:56.88%">Feb</span><span style="left:82.57%">Mar</span></div></div>
+      <ol><li class="nf"><div class="name"><b>1</b><span>Sign 3 consent forms, pay ₹1.2L fee<small>Founder · 7 Dec to 9 Dec</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar a" style="left:5.50%;width:2.75%" title="Amber: 7 Dec to 9 Dec"></i></div></li><li class=""><div class="name"><b>2</b><span>File consent renewal with Pollution Control Board<small>Plant head · 10 Dec</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:8.26%;width:0.92%" title="Not started: 10 Dec"></i></div></li><li class="nf"><div class="name"><b>3</b><span>Negotiate supply agreement clauses<small>Sales · 8 Dec to 16 Dec</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar a" style="left:6.42%;width:8.26%" title="Amber: 8 Dec to 16 Dec"></i></div></li><li class="nf"><div class="name"><b>4</b><span>Sign customer supply agreement<small>Founder · 18 Dec</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:15.60%;width:0.92%" title="Not started: 18 Dec"></i></div></li><li class="nf"><div class="name"><b>5</b><span>Sign offer letters for remaining 7 hires<small>HR · 7 Dec to 5 Jan</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar a" style="left:5.50%;width:27.52%" title="Amber: 7 Dec to 5 Jan"></i></div></li><li class=""><div class="name"><b>6</b><span>Internal fire-safety check of storage area<small>Admin · 15 Jan to 21 Jan</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:41.28%;width:6.42%" title="Not started: 15 Jan to 21 Jan"></i></div></li><li class=""><div class="name"><b>7</b><span>Fire NOC inspection<small>Admin · 22 Jan</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar g" style="left:47.71%;width:0.92%" title="Green: 22 Jan"></i></div></li><li class=""><div class="name"><b>8</b><span>Consent renewal received<small>Plant head · 10 Dec to 21 Jan</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:8.26%;width:39.45%" title="Not started: 10 Dec to 21 Jan"></i></div></li><li class="nf"><div class="name"><b>9</b><span>All 12 plant staff joined<small>HR · 7 Dec to 7 Feb</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar r" style="left:5.50%;width:57.80%" title="Red: 7 Dec to 7 Feb"></i></div></li><li class=""><div class="name"><b>10</b><span>Train new operators<small>Plant head · 8 Feb to 13 Feb</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:63.30%;width:5.50%" title="Not started: 8 Feb to 13 Feb"></i></div></li><li class=""><div class="name"><b>11</b><span>Trial production run<small>Plant head · 15 Feb to 20 Feb</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:69.72%;width:5.50%" title="Not started: 15 Feb to 20 Feb"></i></div></li><li class=""><div class="name"><b>12</b><span>Buffer: fix trial issues, prep production<small>Plant head · 21 Feb to 28 Feb</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:75.23%;width:7.34%" title="Not started: 21 Feb to 28 Feb"></i></div></li><li class="nf"><div class="name"><b>13</b><span>Board meeting: launch update<small>Founder · 26 Feb</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:79.82%;width:0.92%" title="Not started: 26 Feb"></i></div></li><li class="nf"><div class="name"><b>14</b><span>GO-LIVE (milestone)<small>Founder · 1 Mar</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:82.57%;width:0.92%" title="Not started: 1 Mar"></i></div></li><li class=""><div class="name"><b>15</b><span>Produce 10 tonnes<small>Plant head · 1 Mar to 10 Mar</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:82.57%;width:9.17%" title="Not started: 1 Mar to 10 Mar"></i></div></li><li class=""><div class="name"><b>16</b><span>QC testing and packing<small>Anjali Shinde (QC) · 11 Mar</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:91.74%;width:0.92%" title="Not started: 11 Mar"></i></div></li><li class=""><div class="name"><b>17</b><span>First dispatch<small>Sales · 12 Mar</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:92.66%;width:0.92%" title="Not started: 12 Mar"></i></div></li><li class=""><div class="name"><b>18</b><span>Delivery to customer<small>Sales · 12 Mar to 15 Mar</small></span></div><div class="track"><i class="travel" style="left:36.70%;width:10.09%"></i><i class="mark" style="left:69.72%"></i><i class="mark" style="left:82.57%"></i><i class="mark" style="left:95.41%"></i><i class="asof" style="left:5.50%"></i><i class="bar n" style="left:92.66%;width:3.67%" title="Not started: 12 Mar to 15 Mar"></i></div></li></ol>
+    </div>
+  </div>
+  <div class="legend"><span><i style="background:var(--red)"></i>Red</span><span><i style="background:#d08a10"></i>Amber</span><span><i style="background:var(--green)"></i>Green</span><span><i style="background:#9aa79c"></i>Not started</span></div>
+</section>
+
+<section aria-labelledby="h-tasks">
+  <h2 id="h-tasks">All tasks</h2>
+  <p class="sub">Days left counts from 7 December to each task's end date. In the Excel file it is a formula that counts from today.</p>
+  <div class="card scroll">
+    <table id="tasks">
+      <thead><tr><th>#</th><th>Task and owner</th><th>Start, end</th><th>Depends on</th><th>Status</th><th>Days left</th><th>Last update</th><th>Next step</th><th>Needs founder</th></tr></thead>
+      <tbody><tr class="nf"><td class="num">1</td><td><b>Sign 3 consent forms, pay ₹1.2L fee</b><small>Founder</small></td><td class="nowrap">7 Dec<br>9 Dec</td><td><span class="none">–</span></td><td><span class="chip Amber">Amber</span></td><td class="num">2</td><td>7 Dec, Plant head: docs ready</td><td>Founder signs and approves fee this week</td><td><b>Yes</b><small>Sign 3 forms and approve the ₹1.2L fee</small></td></tr><tr class=""><td class="num">2</td><td><b>File consent renewal with Pollution Control Board</b><small>Plant head</small></td><td class="nowrap">10 Dec<br>10 Dec</td><td>1</td><td><span class="chip Notstarted">Not started</span></td><td class="num">3</td><td><span class="none">–</span></td><td>File the day forms are signed</td><td><span class="none">–</span></td></tr><tr class="nf"><td class="num">3</td><td><b>Negotiate supply agreement clauses</b><small>Sales</small></td><td class="nowrap">8 Dec<br>16 Dec</td><td><span class="none">–</span></td><td><span class="chip Amber">Amber</span></td><td class="num">9</td><td>7 Dec, Sales: customer firm on 90 days and 15 Mar</td><td>Ask for penalty cap, liability cap, force majeure</td><td><b>Yes</b><small>Set walk-away points</small></td></tr><tr class="nf"><td class="num">4</td><td><b>Sign customer supply agreement</b><small>Founder</small></td><td class="nowrap">18 Dec<br>18 Dec</td><td>3</td><td><span class="chip Notstarted">Not started</span></td><td class="num">11</td><td><span class="none">–</span></td><td>Founder signs before 10 Jan travel</td><td><b>Yes</b><small>Sign the agreement</small></td></tr><tr class="nf"><td class="num">5</td><td><b>Sign offer letters for remaining 7 hires</b><small>HR</small></td><td class="nowrap">7 Dec<br>5 Jan</td><td><span class="none">–</span></td><td><span class="chip Amber">Amber</span></td><td class="num">29</td><td>7 Dec: 5 of 12 offered</td><td>Close 7 offers; confirm budget</td><td><b>Yes</b><small>Approve the hiring budget</small></td></tr><tr class=""><td class="num">6</td><td><b>Internal fire-safety check of storage area</b><small>Admin</small></td><td class="nowrap">15 Jan<br>21 Jan</td><td><span class="none">–</span></td><td><span class="chip Notstarted">Not started</span></td><td class="num">45</td><td><span class="none">–</span></td><td>Check extinguishers, exits, wiring</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">7</td><td><b>Fire NOC inspection</b><small>Admin</small></td><td class="nowrap">22 Jan<br>22 Jan</td><td>6</td><td><span class="chip Green">Green</span></td><td class="num">46</td><td>7 Dec, Admin: fixed for 22 Jan</td><td>Re-inspection by 14 Feb if it fails</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">8</td><td><b>Consent renewal received</b><small>Plant head</small></td><td class="nowrap">10 Dec<br>21 Jan</td><td>2</td><td><span class="chip Notstarted">Not started</span></td><td class="num">45</td><td><span class="none">–</span></td><td>Follow up with Board weekly</td><td><span class="none">–</span></td></tr><tr class="nf"><td class="num">9</td><td><b>All 12 plant staff joined</b><small>HR</small></td><td class="nowrap">7 Dec<br>7 Feb</td><td>5</td><td><span class="chip Red">Red</span></td><td class="num">62</td><td>7 Dec, HR: Pooja 1 Mar, Vikram 8 Mar, Anjali 15 Feb</td><td>Move Pooja before 7 Feb; interim night supervisor until Vikram joins</td><td><b>Yes</b><small>Decide on Vikram: interim night supervisor and salary</small></td></tr><tr class=""><td class="num">10</td><td><b>Train new operators</b><small>Plant head</small></td><td class="nowrap">8 Feb<br>13 Feb</td><td>9</td><td><span class="chip Notstarted">Not started</span></td><td class="num">68</td><td><span class="none">–</span></td><td>Prepare training plan</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">11</td><td><b>Trial production run</b><small>Plant head</small></td><td class="nowrap">15 Feb<br>20 Feb</td><td>7, 8, 10</td><td><span class="chip Notstarted">Not started</span></td><td class="num">75</td><td><span class="none">–</span></td><td>Confirm raw material stock</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">12</td><td><b>Buffer: fix trial issues, prep production</b><small>Plant head</small></td><td class="nowrap">21 Feb<br>28 Feb</td><td>11</td><td><span class="chip Notstarted">Not started</span></td><td class="num">83</td><td><span class="none">–</span></td><td><span class="none">–</span></td><td><span class="none">–</span></td></tr><tr class="nf"><td class="num">13</td><td><b>Board meeting: launch update</b><small>Founder</small></td><td class="nowrap">26 Feb<br>26 Feb</td><td>11</td><td><span class="chip Notstarted">Not started</span></td><td class="num">81</td><td><span class="none">–</span></td><td>Use trial results in deck</td><td><b>Yes</b><small>Founder owns this task</small></td></tr><tr class="nf"><td class="num">14</td><td><b>GO-LIVE (milestone)</b><small>Founder</small></td><td class="nowrap">1 Mar<br>1 Mar</td><td>8, 11, 12</td><td><span class="chip Notstarted">Not started</span></td><td class="num">84</td><td><span class="none">–</span></td><td>Triggers ₹3 crore investor tranche</td><td><b>Yes</b><small>Founder owns this task</small></td></tr><tr class=""><td class="num">15</td><td><b>Produce 10 tonnes</b><small>Plant head</small></td><td class="nowrap">1 Mar<br>10 Mar</td><td>14</td><td><span class="chip Notstarted">Not started</span></td><td class="num">93</td><td><span class="none">–</span></td><td>Confirm daily capacity (needs ≥1 t/day)</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">16</td><td><b>QC testing and packing</b><small>Anjali Shinde (QC)</small></td><td class="nowrap">11 Mar<br>11 Mar</td><td>15</td><td><span class="chip Notstarted">Not started</span></td><td class="num">94</td><td><span class="none">–</span></td><td><span class="none">–</span></td><td><span class="none">–</span></td></tr><tr class=""><td class="num">17</td><td><b>First dispatch</b><small>Sales</small></td><td class="nowrap">12 Mar<br>12 Mar</td><td>4, 16</td><td><span class="chip Notstarted">Not started</span></td><td class="num">95</td><td><span class="none">–</span></td><td>Book transport</td><td><span class="none">–</span></td></tr><tr class=""><td class="num">18</td><td><b>Delivery to customer</b><small>Sales</small></td><td class="nowrap">12 Mar<br>15 Mar</td><td>17</td><td><span class="chip Notstarted">Not started</span></td><td class="num">98</td><td><span class="none">–</span></td><td>Contract deadline, cannot move</td><td><span class="none">–</span></td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="h-rules">
+  <h2 id="h-rules">Dates that cannot move, and how the tracker is kept</h2>
+  <div class="two">
+    <div class="card"><dl>
+      <dt>15 Feb 2027</dt><dd>Current consent to operate expires. Renewal takes about six weeks from filing.</dd>
+      <dt>10–20 Jan 2027</dt><dd>Founder travelling. Anything that needs a signature is done before 10 Jan.</dd>
+      <dt>1 Mar 2027</dt><dd>Go-live. The ₹3 crore investor tranche is released only once the plant is live.</dd>
+      <dt>15 Mar 2027</dt><dd>All 10 tonnes delivered. Draft penalty: 2% of ₹1.2 crore a week (₹2.4 lakh), no cap.</dd>
+    </dl></div>
+    <div class="card"><dl>
+      <dt>Who updates</dt><dd>Each owner updates their own rows. The Founder's Office checks the whole tracker daily.</dd>
+      <dt>When</dt><dd>Every Monday by 11 am, and the same day anything changes.</dd>
+      <dt>Status</dt><dd>Green on track. Amber at risk, under 3 days of buffer, or waiting on someone. Red past its end date or making a dependent task late.</dd>
+      <dt>Date moves</dt><dd>Update the row, then every task that lists it under Depends on.</dd>
+    </dl></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-log">
+  <h2 id="h-log">Change log</h2>
+  <p class="sub">Every change from a team message, with where it came from.</p>
+  <div class="card scroll">
+    <table style="min-width:760px">
+      <thead><tr><th>Date</th><th>Task</th><th>What changed</th><th>Source</th></tr></thead>
+      <tbody><tr><td class="nowrap">7 Dec</td><td>1 Consent forms and fee</td><td>Documents ready. Status set to Amber. Founder to sign 3 forms and approve the ₹1.2L fee by 9 Dec.</td><td>Plant head, WhatsApp, 9:10 am</td></tr><tr><td class="nowrap">7 Dec</td><td>3 Negotiate supply agreement</td><td>Customer can sign by 18 Dec if payment stays at 90 days. Status set to Amber. Founder&#x27;s walk-away points needed before the mark-up goes on 11 Dec.</td><td>Sales, email, 11:30 am</td></tr><tr><td class="nowrap">7 Dec</td><td>18 Delivery to customer</td><td>15 March delivery date confirmed as fixed. No date change.</td><td>Sales, email, 11:30 am</td></tr><tr><td class="nowrap">7 Dec</td><td>13 Board meeting</td><td>Q3 revenue of ₹1.74 Cr marked final by Accounts. Not a launch task: passed to the board deck owner. Confirm which quarter is meant.</td><td>Accounts, WhatsApp, 12:05 pm</td></tr><tr><td class="nowrap">7 Dec</td><td>9 All 12 plant staff joined</td><td>Pooja Kale joining 1 Mar (tracker had 31 Feb, not a real date). Offer letter still not signed. Status set to Red: she misses training.</td><td>HR, email, 3:20 pm</td></tr><tr><td class="nowrap">7 Dec</td><td>9 All 12 plant staff joined</td><td>Vikram Desai confirmed for 8 Mar, after go-live. Founder to decide on an interim night supervisor.</td><td>HR, email, 3:20 pm</td></tr><tr><td class="nowrap">7 Dec</td><td>6 and 7 Fire NOC (new rows)</td><td>Fire NOC inspection fixed for 22 Jan. Added as task 7, with an internal check as task 6. Trial run (task 11) now depends on task 7.</td><td>Admin, WhatsApp, 5:45 pm</td></tr></tbody>
+    </table>
+  </div>
+</section>
+</main>
+
+<footer class="wrap"><p>A case-study prototype by Ashutosh Birla, not an official Without page. The same data is in the Excel file, with a dropdown for status and a formula for days left.</p></footer>
+<script>
+const b=document.getElementById('fo');
+b.addEventListener('click',()=>{const on=document.body.classList.toggle('founder');b.setAttribute('aria-pressed',on);b.textContent=on?'Show all tasks':'Show only what needs the founder';});
+</script>
+</body>
+</html>
